@@ -2,6 +2,10 @@
 
 hotelApp.utils = (function () {
     
+    function createBase64AuthString(email, password) {
+        return "Basic " + window.btoa(email + ':' + password);
+    }
+    
     function getUserInfo(callback) {
         return fetch(
             "http://localhost:8080/HotelApp/webresources/secured/user",
@@ -42,10 +46,18 @@ hotelApp.utils = (function () {
                 response.status, response);
     }
     
+    function getFormUrlencodedString(formBodyObj) {
+      return Object.keys(formBodyObj).map(
+              function(key) { return key + '=' + formBodyObj[key]}
+                ).join("&");
+    }
+    
     return {
         isAuthenticated: isAuthenticated,
         getBase64String: getBase64String,
         logErrorSentFromBackend: logErrorSentFromBackend,
-        getUserInfo: getUserInfo
+        getUserInfo: getUserInfo,
+        createBase64AuthString: createBase64AuthString,
+        getFormUrlencodedString: getFormUrlencodedString
     };
 }())

@@ -307,22 +307,20 @@ public class SecuredRoutes {
         Statement sqlStatement = null;
         
         String query = "INSERT INTO TEAM (NAME) " + "VALUES " + "'" + teamName + "'";
-        String getNewTeamQuery = "SELECT * FROM TEAM WHERE ID = ";
         
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
             sqlStatement = connection.createStatement();
-            sqlStatement.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+            int hasAddedSuccessfully = sqlStatement.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             ResultSet rs = sqlStatement.getGeneratedKeys();
-            JSONObject obj = new JSONObject();
             if (rs.next()) {
-                String newTeamId = rs.getBigDecimal(1).toString();
-                getNewTeamQuery += newTeamId;
-                String newTeamName = getNewTeamName(connection.createStatement(), getNewTeamQuery);
-                addUserToEmployeeTeamDb(sqlStatement, employeeId, newTeamId);
+                if (hasAddedSuccessfully > 0) {
+                    String newTeamId = rs.getBigDecimal(1).toString();
+                    if (addUserToEmployeeTeamDb(sqlStatement, employeeId, newTeamId) > 0) {
+                        return "true";
+                    }
+                }
             }
-            
-            return "true";
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
@@ -345,11 +343,15 @@ public class SecuredRoutes {
         return null;
     }
     
-    private void addUserToEmployeeTeamDb(
+    private int addUserToEmployeeTeamDb(
         Statement sqlStatement,
         String employeeId, String teamId) throws SQLException {
         String addUserToTeamQuery = "INSERT INTO EMPLOYEE_TEAM (EMPLOYEEID, TEAMID) VALUES ";
         addUserToTeamQuery += "(" + employeeId + "," + teamId + ")";
-        sqlStatement.executeUpdate(addUserToTeamQuery, Statement.RETURN_GENERATED_KEYS);
+        int hasAddedSuccesfully = sqlStatement.executeUpdate(addUserToTeamQuery, Statement.RETURN_GENERATED_KEYS);
+        if (hasAddedSuccesfully > 0) {
+            return 1;
+        }
+        return 0;
     }
 }
