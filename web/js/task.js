@@ -11,13 +11,15 @@
   }
   
   function renderManagerUIElements() {
+    var viewContainer = document.getElementsByClassName("container")[0];
     var button = document.createElement("button");
+    button.classList.add("button");
     var text = document.createTextNode("Add task for this member");
     var modal = document.getElementById('addTaskModal');
     var addTaskModalButton = document.getElementById('addTaskModalButton');
     button.setAttribute("id", "addTaskButton");
     button.appendChild(text);             
-    document.body.appendChild(button);
+    viewContainer.appendChild(button);
     button.addEventListener("click", function(){
         modal.style.display = 'block';
     });
@@ -111,11 +113,23 @@
         }
   
   function createTaskEl(task) {
-    var p = document.createElement("p");
-    var t = document.createTextNode(task.description + " " + task.status);
-    p.appendChild(t);
-    document.body.appendChild(p);
-    attachEventListenersToTeamMemberEl(p, task.ID);
+    var viewContainer = document.getElementsByClassName("container")[0];
+    var taskEl = document.createElement("div");
+    taskEl.classList.add("listItem");
+    var t = document.createTextNode(task.description + " " + getTaskStatus(task.status));
+    taskEl.appendChild(t);
+    viewContainer.appendChild(taskEl);
+    attachEventListenersToTeamMemberEl(taskEl, task.ID);
+  }
+  
+  function getTaskStatus(statusNum) {
+      if (statusNum === "0")
+          return "To-do";
+      else if (statusNum === "1")
+          return "Doing";
+      else {
+          return "Done";
+      }
   }
   
   function attachEventListenersToTeamMemberEl(el, taskId) {

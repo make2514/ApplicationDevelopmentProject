@@ -1,0 +1,7 @@
+#addTaskButton {
+    background-color: #4949d2;
+}
+
+.container > div#addTaskModal {
+    display: none;
+}
