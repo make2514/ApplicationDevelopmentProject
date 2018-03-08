@@ -9,10 +9,31 @@ and open the template in the editor.
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="css/modal.css">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/register.css">
+        <link rel="stylesheet" type="text/css" href="css/teams.css">
+        <link rel="stylesheet" type="text/css" href="css/team.css">
     </head>
     <body>
-        <div>Team name</div>
+            <div class="container">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Holiday_Inn_Logo.svg/1024px-Holiday_Inn_Logo.svg.png">
+                    <h3>Teams</h3>
+                <div id="addMemberModal" class="modal">
+                    <!-- Modal content -->
+                <div class="modal-content">
+                <div>Add member</div>
+                <form>
+                    <label for="newMemberEmail">Member email</label>
+                    <input required name="newMemberEmail" id="newMemberEmail" type="text">
+                    <button id="addMemberModalButton">Add</button>
+                </form>
+                </div>
+            </div>
+            </div>
+        
         <script src="js/index.js"></script>
+        <script src="js/utils.js"></script>
         <script src="js/team.js"></script>
     </body>
 </html>

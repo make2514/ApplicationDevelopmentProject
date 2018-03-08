@@ -1,0 +1,11 @@
+.container > div#addMemberModal {
+    display: none;
+}
+
+#addMemberButton {
+    background-color: #4949d2; 
+}
+
+.container > div.list-item {
+    display: block;
+}

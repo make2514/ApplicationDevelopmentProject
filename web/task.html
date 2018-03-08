@@ -9,9 +9,26 @@ and open the template in the editor.
         <title>Tasks</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="css/modal.css">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/register.css">
+        <link rel="stylesheet" type="text/css" href="css/teams.css">
     </head>
     <body>
         <div>Tasks</div>
+        <div id="addTaskModal" class="modal">
+              <!-- Modal content -->
+            <div class="modal-content">
+              <div>Add task</div>
+              <form>
+                  <label for="newTaskDescription">Task description</label>
+                  <input required name="newTaskDescription" id="newTaskDescription" type="text">
+                  <button id="addTaskModalButton">Add</button>
+              </form>
+            </div>
+        </div>
+        <script src="js/index.js"></script>
+        <script src="js/utils.js"></script>
         <script src="js/task.js"></script>
     </body>
 </html>

@@ -11,13 +11,15 @@
   }
   
   function renderManagerUIElements() {
+    var viewContainer = document.getElementsByClassName("container")[0];
     var button = document.createElement("button");
+    button.classList.add("button");
     var text = document.createTextNode("Create team");
     var modal = document.getElementById('addNewTeamModal');
     var modalAddNewTeamButton = document.getElementById('modalAddNewTeamButton');
     button.setAttribute("id", "addNewTeamButton");
-    button.appendChild(text);             
-    document.body.appendChild(button);
+    button.appendChild(text);
+    viewContainer.appendChild(button);
     button.addEventListener("click", function(){
         modal.style.display = 'block';
     });
@@ -34,7 +36,7 @@
   
   function getTeams() {
         fetch(
-        "http://localhost:8080/HotelApp/webresources/secured/team",
+        "/HotelApp/webresources/secured/team",
             {
                 headers:
                 {
@@ -53,11 +55,8 @@
                   });
                   return;
               }
-              response.text().then(function (text) {
-                console.log(text);
-                var res = text.split(",");
-                res.forEach(createTeamEl);
-                
+              response.text().then(function (teamListArrayString) {
+                JSON.parse(teamListArrayString).forEach(createTeamEl);
               });
             }
           )
@@ -82,9 +81,8 @@
   }
   
   function addNewTeam() {
-        var newTeamName = getNewTeamName();
         fetch(
-        "http://localhost:8080/HotelApp/webresources/secured/team/add",
+        "/HotelApp/webresources/secured/team/",
             {
                 method: 'post',
                 body: getFormUrlencodedString({
@@ -108,7 +106,10 @@
                   });
                   return;
               }
-              location.href = '/HotelApp/team.html?team=' + newTeamName;
+              response.text().then(function (teamId) {
+                location.href = '/HotelApp/team.html?team=' + teamId;
+              });
+              
             }
           )
           .catch(function(err) {
@@ -117,16 +118,18 @@
   }
   
   function createTeamEl(team) {
-    var p = document.createElement("p");
-    var t = document.createTextNode(team);      
-    p.appendChild(t);                             
-    document.body.appendChild(p);
-    attachEventListenersToTeamEl(p);
+    var viewContainer = document.getElementsByClassName("container")[0];
+    var teamEl = document.createElement("div");
+    teamEl.classList.add("listItem");
+    var t = document.createTextNode(team.name);      
+    teamEl.appendChild(t);                       
+    viewContainer.appendChild(teamEl);
+    attachEventListenersToTeamEl(teamEl, team.id);
   }
   
-  function attachEventListenersToTeamEl(el) {
+  function attachEventListenersToTeamEl(el, teamId) {
     el.addEventListener("click", function(){
-        location.href = '/HotelApp/team.html?team=' + el.textContent;
+        location.href = '/HotelApp/team.html?team=' + teamId;
     });
   }
   
@@ -139,7 +142,6 @@
                   return;
               }
           }
-      });
-      getTeams();
+      }).then(getTeams); 
   }
 }());

@@ -3,7 +3,7 @@
 hotelApp.userInfo = function() {
     if (hotelApp.utils.isAuthenticated()) {
       fetch(
-          "http://localhost:8080/HotelApp/webresources/secured/user",
+          "/HotelApp/webresources/secured/user",
               {
                   headers:
                   {

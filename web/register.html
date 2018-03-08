@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Register</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/register.css">
+    </head>
+    <body>
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Holiday_Inn_Logo.svg/1024px-Holiday_Inn_Logo.svg.png">
+            <h3>Registration</h3>
+            <form id="registerForm">
+                <div class="container">
+                    <label for="email"><b>Email</b></label>
+                    <input required id="email" type="email" placeholder="Enter Email" name="email">
+                    <label for="role"><b>Role</b></label>
+                    <select name="role" id="role">
+                    <option value="manager">Manager</option>
+                    <option value="non-manager">Non-manager</option>
+                    </select>
+                    <input required id="firstName" type="text" placeholder="First name" name="firstName">
+                    <input required id="lastName" type="text" placeholder="Last name" name="lastName">
+
+                    <label for="password"><b>Password</b></label>
+                    <input required id="password" type="password" placeholder="Enter Password" name="password">
+
+                    <label for="retypePassword"><b>Password</b></label>
+                    <input required id="retypePassword" type="password" placeholder="Type Password Agagin" name="retypePassword">
+
+                    <button class="button" id="submit" type="submit">Register</button>
+                </div>
+            </form>
+        </div>
+        <script src="js/index.js"></script>
+        <script src="js/utils.js"></script>
+        <script src="js/register.js"></script>
+    </body>
+</html>

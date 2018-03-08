@@ -13,7 +13,7 @@
   function login(email, password) {
     var base64String = "Basic " + window.btoa(email + ':' + password);
     fetch(
-    "http://localhost:8080/HotelApp/webresources/secured/login",
+    "/HotelApp/webresources/secured/login",
         {
             headers:
             {

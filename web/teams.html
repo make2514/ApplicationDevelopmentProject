@@ -9,22 +9,28 @@ and open the template in the editor.
         <title>Teams</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="css/modal.css">
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+        <link rel="stylesheet" type="text/css" href="css/register.css">
         <link rel="stylesheet" type="text/css" href="css/teams.css">
     </head>
     <body>
-        <a href="/HotelApp/login.html">Login</a>
-        <div class="team-view-container">
-            <!-- Modal -->
-            <div id="addNewTeamModal" class="modal">
-              <!-- Modal content -->
-              <div class="modal-content">
-                <div>Add new team</div>
-                <form>
-                    <label for="newTeamName">New Team Name</label>
-                    <input required name="newTeamName" id="newTeamName" type="text">
-                    <button id="modalAddNewTeamButton">Add</button>
-                </form>
-              </div>
+        <div class="container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Holiday_Inn_Logo.svg/1024px-Holiday_Inn_Logo.svg.png">
+            <h3>Teams</h3>
+            <div class="team-view-container">
+                <!-- Modal -->
+                <div id="addNewTeamModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <div>Add new team</div>
+                    <form>
+                        <label for="newTeamName">New Team Name</label>
+                        <input required name="newTeamName" id="newTeamName" type="text">
+                        <button id="modalAddNewTeamButton">Add</button>
+                    </form>
+                </div>
+                </div>
             </div>
         </div>
         <script src="js/index.js"></script>

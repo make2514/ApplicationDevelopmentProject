@@ -8,7 +8,7 @@ hotelApp.utils = (function () {
     
     function getUserInfo(callback) {
         return fetch(
-            "http://localhost:8080/HotelApp/webresources/secured/user",
+            "/HotelApp/webresources/secured/user",
                 {
                     headers:
                     {

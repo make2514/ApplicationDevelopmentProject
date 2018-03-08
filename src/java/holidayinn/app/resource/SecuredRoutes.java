@@ -43,6 +43,7 @@ public class SecuredRoutes {
         return "User is authenticated and can log in";
     }
     
+    // Get all teams that the user belongs to
     @GET
     @Path("team")
     @Produces(MediaType.APPLICATION_JSON)
@@ -51,20 +52,21 @@ public class SecuredRoutes {
         return getTeamsFromDb(headerParams.getFirst("Authorization"));
     }
     
+    
     @GET
-    @Path("team/{name}")
+    @Path("team/{teamId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getTeamMembers(@PathParam("name") String name) throws SQLException {
+    public String getTeamMembers(@PathParam("teamId") String name) throws SQLException {
         return getTeamMembersFromDb(name).toString();
     }
     
     @GET
-    @Path("team/{team}/{employeeId}")
+    @Path("team/{teamId}/{employeeId}")
     @Produces(MediaType.TEXT_PLAIN)
     public String getTeamMemberTasks(
-            @PathParam("employeeId") String memberId,
-            @PathParam("team") String team) throws SQLException {
-        JSONArray tasks = getTasksOfAPersonInATeamFromDb(Integer.parseInt(memberId), team);
+            @PathParam("employeeId") String employeeId,
+            @PathParam("teamId") String teamId) throws SQLException {
+        JSONArray tasks = getTasksOfAPersonInATeamFromDb(Integer.parseInt(employeeId), teamId);
         return tasks.toString();
     }
     
@@ -78,13 +80,34 @@ public class SecuredRoutes {
     }
     
     @POST
-    @Path("team/add")
+    @Path("team")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String addNewTeam(
             @FormParam("teamName") String teamName,
             @FormParam("userId") String userId) throws SQLException {
         return addNewTeamToDb(teamName, userId);
+    }
+    
+    @POST
+    @Path("team/member")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String addMember(
+            @FormParam("teamId") String teamId,
+            @FormParam("userEmail") String userEmail) throws SQLException {
+        return addMemberToDb(teamId, userEmail);
+    }
+    
+    @POST
+    @Path("team/member/task")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String addTask(
+            @FormParam("teamId") String teamId,
+            @FormParam("employeeId") String employeeId,
+            @FormParam("description") String description) throws SQLException {
+        return addTaskToDb(teamId, employeeId, description);
     }
     
     private String getEmailFromBase64String(String base64String) {
@@ -107,10 +130,10 @@ public class SecuredRoutes {
         Connection connection = null;
         Statement sqlStatement = null;
         String email = getEmailFromBase64String(base64String);
-        String query = "SELECT Name\n" +
-                        "FROM EMPLOYEE_team\n" +
-                        "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_team.EMPLOYEEID\n" +
-                        "JOIN team ON team.id = EMPLOYEE_team.teamid " + 
+        String query = "SELECT TEAM.NAME, TEAM.ID\n" +
+                        "FROM EMPLOYEE_TEAM\n" +
+                        "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid " + 
                         "where EMPLOYEE.EMAIL = '" + email + "'";
 
         try {
@@ -118,14 +141,17 @@ public class SecuredRoutes {
             sqlStatement = connection.createStatement();
             ResultSet resultSet = sqlStatement.executeQuery(query);
             System.out.println(resultSet);
-            String resultString = "";
+            JSONArray teamList = new JSONArray();
             while (resultSet.next()) {
+                JSONObject team = new JSONObject();
                 // TODO: current assumption is that emails in our database are unique
                 // To make sure that the emails are unique, we will need to implement a checking mechanism
                 // when user registers
-                resultString += "," + resultSet.getString("NAME");
+                team.put("id", resultSet.getString("ID"));
+                team.put("name", resultSet.getString("NAME"));
+                teamList.put(team);
             }
-            return resultString.substring(1);
+            return teamList.toString();
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
@@ -141,14 +167,14 @@ public class SecuredRoutes {
         return "";
     }
     
-    private JSONArray getTeamMembersFromDb(String teamName) throws SQLException {
+    private JSONArray getTeamMembersFromDb(String teamId) throws SQLException {
         
         Connection connection = null;
         Statement sqlStatement = null;
         String query = "SELECT EMPLOYEE.FIRSTNAME, EMPLOYEE.LASTNAME, EMPLOYEE.ID\n" +
                         "FROM EMPLOYEE\n" +
-                        "JOIN EMPLOYEE_team on EMPLOYEE.id = EMPLOYEE_team.EMPLOYEEID\n" +
-                        "JOIN team ON team.id = EMPLOYEE_team.teamid where team.name = '" + teamName + "'";
+                        "JOIN EMPLOYEE_TEAM on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid where TEAM.id = " + teamId;
 
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
@@ -210,68 +236,10 @@ public class SecuredRoutes {
         
         return null;
     }
-    
-    private Integer getPersonId(String base64String) throws SQLException {
+ 
+    private JSONArray getTasksOfAPersonInATeamFromDb(Integer memberId, String teamId) throws SQLException {
         Connection connection = null;
         Statement sqlStatement = null;
-        String email = getEmailFromBase64String(base64String);
-        String query = "SELECT ID FROM EMPLOYEE WHERE EMAIL = '" + email + "'";
-
-        try {
-            connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
-            sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(query);
-            System.out.println(resultSet);
-            while (resultSet.next()) {
-                // 1 is the column number of ID
-                return resultSet.getInt(1);
-            }
-        } catch (Exception e) {
-            // TODO: send a response with error to the front end
-
-        }
-
-        finally {
-            if (sqlStatement != null) {
-                sqlStatement.close();
-                connection.close();
-            }
-        }
-        return null;
-    }
-    
-    // TODO: refactor this method and getPersonId method
-    private Integer getTeamId(String name) throws SQLException {
-        Connection connection = null;
-        Statement sqlStatement = null;
-        String query = "SELECT ID FROM TEAM Where name = '" + name + "'";
-
-        try {
-            connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
-            sqlStatement = connection.createStatement();
-            ResultSet resultSet = sqlStatement.executeQuery(query);
-            while (resultSet.next()) {
-                // 1 is the column number of ID
-                return resultSet.getInt(1);
-            }
-        } catch (Exception e) {
-            // TODO: send a response with error to the front end
-
-        }
-
-        finally {
-            if (sqlStatement != null) {
-                sqlStatement.close();
-                connection.close();
-            }
-        }
-        return null;
-    }
-    
-    private JSONArray getTasksOfAPersonInATeamFromDb(Integer memberId, String teamName) throws SQLException {
-        Connection connection = null;
-        Statement sqlStatement = null;
-        int teamId = getTeamId(teamName);
         
         String query = "SELECT DESCRIPTION,STATUS FROM TASK WHERE EMPLOYEEID = " + memberId +
                 " AND TEAMID = " + teamId;
@@ -306,8 +274,8 @@ public class SecuredRoutes {
         Connection connection = null;
         Statement sqlStatement = null;
         
-        String query = "INSERT INTO TEAM (NAME) " + "VALUES " + "'" + teamName + "'";
-        
+        String query = "INSERT INTO TEAM (NAME) " + "VALUES " + "(" + "'" + teamName + "'" + ")";
+        String error = "";
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
             sqlStatement = connection.createStatement();
@@ -317,12 +285,13 @@ public class SecuredRoutes {
                 if (hasAddedSuccessfully > 0) {
                     String newTeamId = rs.getBigDecimal(1).toString();
                     if (addUserToEmployeeTeamDb(sqlStatement, employeeId, newTeamId) > 0) {
-                        return "true";
+                        return newTeamId;
                     }
                 }
             }
         } catch (Exception e) {
             // TODO: send a response with error to the front end
+            error = e.toString();
 
         }
 
@@ -332,17 +301,9 @@ public class SecuredRoutes {
                 connection.close();
             }
         }
-        return "false";
+        return "false" + error + " " + query;
     }
-    
-    private String getNewTeamName(Statement sqlStatement, String query) throws SQLException {
-        ResultSet rs = sqlStatement.executeQuery(query);
-        if (rs.next()) {
-            return rs.getString("NAME");
-        }
-        return null;
-    }
-    
+   
     private int addUserToEmployeeTeamDb(
         Statement sqlStatement,
         String employeeId, String teamId) throws SQLException {
@@ -353,5 +314,56 @@ public class SecuredRoutes {
             return 1;
         }
         return 0;
+    }
+    
+     private String addMemberToDb(String teamId, String userEmail) throws SQLException {
+        /*
+         1. Check if the email is registered or not
+         2. If yes, check if the email belongs to a user who is already a team member
+                If yes, return string indicating so
+                If no, add the user to the team
+         3. If no, return string indicating so
+         */
+        String userBelongToTeamQuery = "SELECT TEAM.NAME, TEAM.ID \n" +
+                        "FROM EMPLOYEE_TEAM\n" +
+                        "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid\n" +
+                        "where EMPLOYEE.EMAIL = ?\n" +
+                        "AND TEAM.ID = ?";
+        String insertUserToTeamQuery = "INSERT INTO EMPLOYEE_TEAM (EMPLOYEEID, TEAMID) "
+                                        + "VALUES (?, ?)";
+         boolean isRegistered = RouteUtils._isRegistered(userEmail);
+         boolean  isUserBelongToTeam = RouteUtils.isInDb(
+                 userBelongToTeamQuery,
+                 new String[]{userEmail, teamId}
+         );
+         if (isRegistered && !isUserBelongToTeam) {
+             RouteUtils.insertToDb(
+                     insertUserToTeamQuery,
+                     new String[]{getUserInfoFromDb(userEmail).getString("ID"), teamId});
+             return "true";
+         }
+         
+         return "false";
+    }
+     
+     private String addTaskToDb(
+             String teamId,
+             String employeeId,
+             String description) throws SQLException {
+        /*
+         1. Check if the email is registered or not
+         2. If yes, check if the email belongs to a user who is already a team member
+                If yes, return string indicating so
+                If no, add the user to the team
+         3. If no, return string indicating so
+         */
+        String addTaskQuery = "INSERT INTO TASK (EMPLOYEEID, TEAMID, DESCRIPTION, STATUS)\n" +
+                                "VALUES (?, ?, ?, 0)";
+        String addedSuccessfully = RouteUtils.insertToDb(
+                addTaskQuery,
+                new String[]{employeeId, teamId, description});
+        
+        return addedSuccessfully;
     }
 }
