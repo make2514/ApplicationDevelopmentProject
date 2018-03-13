@@ -1,6 +1,5 @@
 package holidayinn.app.resource;
 
-import holidayinn.app.resource.RouteUtils;
 import java.sql.SQLException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -12,8 +11,6 @@ import javax.ws.rs.core.MediaType;
 import holidayinn.app.restApiDatabaseConnection.RestApiDatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import javax.ws.rs.FormParam;
 import org.json.JSONObject;
 
@@ -23,11 +20,11 @@ public class RegisterRoute {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String register(
-            @Context HttpHeaders hh,
-            @FormParam("firstName") String firstName,
-            @FormParam("lastName") String lastName,
-            @FormParam("role") String role
-            ) throws SQLException {
+        @Context HttpHeaders hh,
+        @FormParam("firstName") String firstName,
+        @FormParam("lastName") String lastName,
+        @FormParam("role") String role
+    ) throws SQLException {
         String base64String = RouteUtils.getBase64StringFromRequestHeader(hh);
         JSONObject user = RouteUtils.getUserEmailAndPassword(base64String);
         String email = user.getString("email");
@@ -40,19 +37,19 @@ public class RegisterRoute {
         }
         return "false";
     }
-    
+
     private boolean _registerUser(
-            String email,
-            String password,
-            String role,
-            String firstName,
-            String lastName) throws SQLException {
-        
+        String email,
+        String password,
+        String role,
+        String firstName,
+        String lastName) throws SQLException {
+
         Connection connection = null;
         PreparedStatement sqlStatement = null;
         String query = "INSERT INTO EMPLOYEE (email, password, role, firstname, lastname) " +
-                        "VALUES (?, ?, ?, ?, ?)";
-        
+            "VALUES (?, ?, ?, ?, ?)";
+
 
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
@@ -69,15 +66,13 @@ public class RegisterRoute {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return false;
     }
 }

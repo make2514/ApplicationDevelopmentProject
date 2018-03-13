@@ -6,14 +6,12 @@
 package holidayinn.app.resource;
 
 import holidayinn.app.restApiDatabaseConnection.RestApiDatabaseConnection;
-import java.math.BigDecimal;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
 import java.sql.*;
 import java.util.StringTokenizer;
-import javax.jms.Message;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -29,48 +27,48 @@ import org.json.JSONObject;
 @Path("secured")
 public class SecuredRoutes {
     private static final String AUTHORIZATION_HEADER_PREFIX = "Basic ";
-    
+
     @GET
     @Path("message")
     @Produces(MediaType.TEXT_PLAIN)
     public String securedMethod() {
         return "This api is secured";
     }
-    
+
     @GET
     @Path("login")
     @Produces(MediaType.TEXT_PLAIN)
     public String login() throws SQLException {
         return "User is authenticated and can log in";
     }
-    
+
     // Get all teams that the user belongs to
     @GET
     @Path("team")
     @Produces(MediaType.APPLICATION_JSON)
     public String getTeams(@Context HttpHeaders hh) throws SQLException {
-        MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+        MultivaluedMap < String, String > headerParams = hh.getRequestHeaders();
         return getTeamsFromDb(headerParams.getFirst("Authorization"));
     }
-    
-    
+
+
     @GET
     @Path("team/{teamId}")
     @Produces(MediaType.APPLICATION_JSON)
     public String getTeamMembers(@PathParam("teamId") String name) throws SQLException {
         return getTeamMembersFromDb(name).toString();
     }
-    
+
     @GET
     @Path("team/{teamId}/{employeeId}")
     @Produces(MediaType.TEXT_PLAIN)
     public String getTeamMemberTasks(
-            @PathParam("employeeId") String employeeId,
-            @PathParam("teamId") String teamId) throws SQLException {
+        @PathParam("employeeId") String employeeId,
+        @PathParam("teamId") String teamId) throws SQLException {
         JSONArray tasks = getTasksOfAPersonInATeamFromDb(Integer.parseInt(employeeId), teamId);
         return tasks.toString();
     }
-    
+
     @GET
     @Path("user")
     @Produces(MediaType.TEXT_PLAIN)
@@ -79,66 +77,66 @@ public class SecuredRoutes {
         String email = getEmailFromBase64String(base64String);
         return getUserInfoFromDb(email).toString();
     }
-    
+
     @POST
     @Path("team")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String addNewTeam(
-            @FormParam("teamName") String teamName,
-            @FormParam("userId") String userId) throws SQLException {
+        @FormParam("teamName") String teamName,
+        @FormParam("userId") String userId) throws SQLException {
         return addNewTeamToDb(teamName, userId);
     }
-    
+
     @POST
     @Path("team/member")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String addMember(
-            @FormParam("teamId") String teamId,
-            @FormParam("userEmail") String userEmail) throws SQLException {
+        @FormParam("teamId") String teamId,
+        @FormParam("userEmail") String userEmail) throws SQLException {
         return addMemberToDb(teamId, userEmail);
     }
-    
+
     @POST
     @Path("team/member/task")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String addTask(
-            @FormParam("teamId") String teamId,
-            @FormParam("employeeId") String employeeId,
-            @FormParam("description") String description) throws SQLException {
+        @FormParam("teamId") String teamId,
+        @FormParam("employeeId") String employeeId,
+        @FormParam("description") String description) throws SQLException {
         return addTaskToDb(teamId, employeeId, description);
     }
-    
+
     @DELETE
     @Path("team/{teamId}")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteTeam(
-            @PathParam("teamId") String teamId) throws SQLException {
+        @PathParam("teamId") String teamId) throws SQLException {
         return deleteTeamFromDb(teamId);
     }
-    
+
     @DELETE
     @Path("team/{teamId}/{employeeId}")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteMember(
-            @PathParam("employeeId") String employeeId,
-            @PathParam("teamId") String teamId) throws SQLException {
+        @PathParam("employeeId") String employeeId,
+        @PathParam("teamId") String teamId) throws SQLException {
         return deleteTeamMemberFromDb(teamId, employeeId);
     }
-    
+
     @DELETE
     @Path("team/member/task/{taskId}")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteTask(
-            @PathParam("taskId") String taskId) throws SQLException {
+        @PathParam("taskId") String taskId) throws SQLException {
         return deleteTaskFromDb(taskId);
     }
-    
+
     private String getEmailFromBase64String(String base64String) {
         String authToken = base64String;
         authToken = authToken.replaceFirst(AUTHORIZATION_HEADER_PREFIX, "");
@@ -146,24 +144,24 @@ public class SecuredRoutes {
         StringTokenizer tokenizer = new StringTokenizer(decodedAuthString, ":");
         return tokenizer.nextToken();
     }
-    
+
     private String getBase64StringFromRequestHeader(HttpHeaders hh) {
-        MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+        MultivaluedMap < String, String > headerParams = hh.getRequestHeaders();
         return headerParams.getFirst("Authorization");
-    } 
-    
+    }
+
     // Refactor this method to a method that returns an SQL ResultSet
     // which receives an SQL String as a param
     private String getTeamsFromDb(String base64String) throws SQLException {
-        
+
         Connection connection = null;
         Statement sqlStatement = null;
         String email = getEmailFromBase64String(base64String);
         String query = "SELECT TEAM.NAME, TEAM.ID\n" +
-                        "FROM EMPLOYEE_TEAM\n" +
-                        "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
-                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid " + 
-                        "where EMPLOYEE.EMAIL = '" + email + "'";
+            "FROM EMPLOYEE_TEAM\n" +
+            "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+            "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid " +
+            "where EMPLOYEE.EMAIL = '" + email + "'";
 
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
@@ -184,26 +182,24 @@ public class SecuredRoutes {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return "";
     }
-    
+
     private JSONArray getTeamMembersFromDb(String teamId) throws SQLException {
-        
+
         Connection connection = null;
         Statement sqlStatement = null;
         String query = "SELECT EMPLOYEE.FIRSTNAME, EMPLOYEE.LASTNAME, EMPLOYEE.ID\n" +
-                        "FROM EMPLOYEE\n" +
-                        "JOIN EMPLOYEE_TEAM on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
-                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid where TEAM.id = " + teamId;
+            "FROM EMPLOYEE\n" +
+            "JOIN EMPLOYEE_TEAM on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+            "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid where TEAM.id = " + teamId;
 
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
@@ -211,7 +207,7 @@ public class SecuredRoutes {
             ResultSet resultSet = sqlStatement.executeQuery(query);
             JSONArray ja = new JSONArray();
             while (resultSet.next()) {
-                JSONObject obj = new JSONObject();  
+                JSONObject obj = new JSONObject();
                 obj.put("firstName", resultSet.getString("FIRSTNAME"));
                 obj.put("lastName", resultSet.getString("LASTNAME"));
                 obj.put("ID", resultSet.getString("ID"));
@@ -221,20 +217,18 @@ public class SecuredRoutes {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return null;
     }
-    
+
     private JSONObject getUserInfoFromDb(String email) throws SQLException {
-        
+
         Connection connection = null;
         Statement sqlStatement = null;
         String query = "SELECT * FROM EMPLOYEE WHERE EMAIL = '" + email + "'";
@@ -243,7 +237,7 @@ public class SecuredRoutes {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
             sqlStatement = connection.createStatement();
             ResultSet resultSet = sqlStatement.executeQuery(query);
-            JSONObject obj = new JSONObject();  
+            JSONObject obj = new JSONObject();
             while (resultSet.next()) {
                 obj.put("firstName", resultSet.getString("FIRSTNAME"));
                 obj.put("lastName", resultSet.getString("LASTNAME"));
@@ -254,24 +248,22 @@ public class SecuredRoutes {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return null;
     }
- 
+
     private JSONArray getTasksOfAPersonInATeamFromDb(Integer memberId, String teamId) throws SQLException {
         Connection connection = null;
         Statement sqlStatement = null;
-        
+
         String query = "SELECT ID, DESCRIPTION,STATUS FROM TASK WHERE EMPLOYEEID = " + memberId +
-                " AND TEAMID = " + teamId;
+            " AND TEAMID = " + teamId;
 
         try {
             connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
@@ -279,7 +271,7 @@ public class SecuredRoutes {
             ResultSet resultSet = sqlStatement.executeQuery(query);
             JSONArray ja = new JSONArray();
             while (resultSet.next()) {
-                JSONObject obj = new JSONObject();  
+                JSONObject obj = new JSONObject();
                 obj.put("description", resultSet.getString("DESCRIPTION"));
                 obj.put("status", resultSet.getString("STATUS"));
                 obj.put("id", resultSet.getString("ID"));
@@ -289,9 +281,7 @@ public class SecuredRoutes {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
@@ -299,11 +289,11 @@ public class SecuredRoutes {
         }
         return null;
     }
-    
+
     private String addNewTeamToDb(String teamName, String employeeId) throws SQLException {
         Connection connection = null;
         Statement sqlStatement = null;
-        
+
         String query = "INSERT INTO TEAM (NAME) " + "VALUES " + "(" + "'" + teamName + "'" + ")";
         String error = "";
         try {
@@ -323,9 +313,7 @@ public class SecuredRoutes {
             // TODO: send a response with error to the front end
             error = e.toString();
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
@@ -333,7 +321,7 @@ public class SecuredRoutes {
         }
         return "false" + error + " " + query;
     }
-   
+
     private int addUserToEmployeeTeamDb(
         Statement sqlStatement,
         String employeeId, String teamId) throws SQLException {
@@ -345,8 +333,8 @@ public class SecuredRoutes {
         }
         return 0;
     }
-    
-     private String addMemberToDb(String teamId, String userEmail) throws SQLException {
+
+    private String addMemberToDb(String teamId, String userEmail) throws SQLException {
         /*
          1. Check if the email is registered or not
          2. If yes, check if the email belongs to a user who is already a team member
@@ -355,90 +343,113 @@ public class SecuredRoutes {
          3. If no, return string indicating so
          */
         String userBelongToTeamQuery = "SELECT TEAM.NAME, TEAM.ID \n" +
-                        "FROM EMPLOYEE_TEAM\n" +
-                        "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
-                        "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid\n" +
-                        "where EMPLOYEE.EMAIL = ?\n" +
-                        "AND TEAM.ID = ?";
-        String insertUserToTeamQuery = "INSERT INTO EMPLOYEE_TEAM (EMPLOYEEID, TEAMID) "
-                                        + "VALUES (?, ?)";
-         boolean isRegistered = RouteUtils._isRegistered(userEmail);
-         boolean  isUserBelongToTeam = RouteUtils.isInDb(
-                 userBelongToTeamQuery,
-                 new String[]{userEmail, teamId}
-         );
-         if (isRegistered && !isUserBelongToTeam) {
-             RouteUtils.insertToDb(
-                     insertUserToTeamQuery,
-                     new String[]{getUserInfoFromDb(userEmail).getString("ID"), teamId});
-             return "true";
-         }
-         
-         return "false";
-    }
-     
-    private String addTaskToDb(
-            String teamId,
-            String employeeId,
-            String description) throws SQLException {
-       /*
-        1. Check if the email is registered or not
-        2. If yes, check if the email belongs to a user who is already a team member
-               If yes, return string indicating so
-               If no, add the user to the team
-        3. If no, return string indicating so
-        */
-       String addTaskQuery = "INSERT INTO TASK (EMPLOYEEID, TEAMID, DESCRIPTION, STATUS)\n" +
-                               "VALUES (?, ?, ?, 0)";
-       String addedSuccessfully = RouteUtils.insertToDb(
-               addTaskQuery,
-               new String[]{employeeId, teamId, description});
+            "FROM EMPLOYEE_TEAM\n" +
+            "JOIN EMPLOYEE on EMPLOYEE.id = EMPLOYEE_TEAM.EMPLOYEEID\n" +
+            "JOIN TEAM ON TEAM.id = EMPLOYEE_TEAM.teamid\n" +
+            "where EMPLOYEE.EMAIL = ?\n" +
+            "AND TEAM.ID = ?";
+        String insertUserToTeamQuery = "INSERT INTO EMPLOYEE_TEAM (EMPLOYEEID, TEAMID) " +
+            "VALUES (?, ?)";
+        boolean isRegistered = RouteUtils._isRegistered(userEmail);
+        boolean isUserBelongToTeam = RouteUtils.isInDb(
+            userBelongToTeamQuery,
+            new String[] {
+                userEmail,
+                teamId
+            }
+        );
+        if (isRegistered && !isUserBelongToTeam) {
+            RouteUtils.insertToDb(
+                insertUserToTeamQuery,
+                new String[] {
+                    getUserInfoFromDb(userEmail).getString("ID"), teamId
+                });
+            return "true";
+        }
 
-       return addedSuccessfully;
+        return "false";
     }
-    
+
+    private String addTaskToDb(
+        String teamId,
+        String employeeId,
+        String description) throws SQLException {
+        /*
+         1. Check if the email is registered or not
+         2. If yes, check if the email belongs to a user who is already a team member
+                If yes, return string indicating so
+                If no, add the user to the team
+         3. If no, return string indicating so
+         */
+        String addTaskQuery = "INSERT INTO TASK (EMPLOYEEID, TEAMID, DESCRIPTION, STATUS)\n" +
+            "VALUES (?, ?, ?, 0)";
+        String addedSuccessfully = RouteUtils.insertToDb(
+            addTaskQuery,
+            new String[] {
+                employeeId,
+                teamId,
+                description
+            });
+
+        return addedSuccessfully;
+    }
+
     private String deleteTeamFromDb(String teamId) throws SQLException {
-       String deleteTeamTasksQuery = "DELETE FROM TASK WHERE TEAMID = (?)";
-       String deleteTeamQuery = "DELETE FROM TEAM WHERE ID = (?)";
-       String deleteTeamMembers = "DELETE FROM EMPLOYEE_TEAM WHERE TEAMID = (?)";
-       
-       String deletedTeamTasksSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamTasksQuery,
-               new String[]{teamId}
-       );
-       String deletedTeamMembersSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamMembers,
-               new String[]{teamId}
-       );
-       String deletedTeamSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamQuery,
-               new String[]{teamId}
-       );
-       return deletedTeamTasksSuccessfully + deletedTeamMembersSuccessfully + deletedTeamSuccessfully;
+        String deleteTeamTasksQuery = "DELETE FROM TASK WHERE TEAMID = (?)";
+        String deleteTeamQuery = "DELETE FROM TEAM WHERE ID = (?)";
+        String deleteTeamMembers = "DELETE FROM EMPLOYEE_TEAM WHERE TEAMID = (?)";
+
+        String deletedTeamTasksSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamTasksQuery,
+            new String[] {
+                teamId
+            }
+        );
+        String deletedTeamMembersSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamMembers,
+            new String[] {
+                teamId
+            }
+        );
+        String deletedTeamSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamQuery,
+            new String[] {
+                teamId
+            }
+        );
+        return deletedTeamTasksSuccessfully + deletedTeamMembersSuccessfully + deletedTeamSuccessfully;
     }
-    
+
     private String deleteTeamMemberFromDb(String teamId, String employeeId) throws SQLException {
-       String deleteTeamMemberTasksQuery = "DELETE FROM TASK WHERE TEAMID = (?) AND EMPLOYEEID = (?)";
-       String deleteTeamMemberQuery = "DELETE FROM EMPLOYEE_TEAM WHERE TEAMID = (?) AND EMPLOYEEID = (?)";
-       
-       String deletedTeamMemberTasksSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamMemberTasksQuery,
-               new String[]{teamId, employeeId}
-       );
-       String deletedTeamMemberSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamMemberQuery,
-               new String[]{teamId, employeeId}
-       );
-       return deletedTeamMemberTasksSuccessfully + deletedTeamMemberSuccessfully;
+        String deleteTeamMemberTasksQuery = "DELETE FROM TASK WHERE TEAMID = (?) AND EMPLOYEEID = (?)";
+        String deleteTeamMemberQuery = "DELETE FROM EMPLOYEE_TEAM WHERE TEAMID = (?) AND EMPLOYEEID = (?)";
+
+        String deletedTeamMemberTasksSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamMemberTasksQuery,
+            new String[] {
+                teamId,
+                employeeId
+            }
+        );
+        String deletedTeamMemberSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamMemberQuery,
+            new String[] {
+                teamId,
+                employeeId
+            }
+        );
+        return deletedTeamMemberTasksSuccessfully + deletedTeamMemberSuccessfully;
     }
-    
+
     private String deleteTaskFromDb(String taskId) throws SQLException {
-       String deleteTeamMemberTasksQuery = "DELETE FROM TASK WHERE ID = (?)";
-       
-       String deletedTaskSuccessfully = RouteUtils.deleteFromDb(
-               deleteTeamMemberTasksQuery,
-               new String[]{taskId}
-       );
-       return deletedTaskSuccessfully;
+        String deleteTeamMemberTasksQuery = "DELETE FROM TASK WHERE ID = (?)";
+
+        String deletedTaskSuccessfully = RouteUtils.deleteFromDb(
+            deleteTeamMemberTasksQuery,
+            new String[] {
+                taskId
+            }
+        );
+        return deletedTaskSuccessfully;
     }
 }

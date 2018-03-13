@@ -27,7 +27,7 @@ import java.util.Base64;
  */
 @Provider // Filter has to be annotated with @Provider
 public class SecurityFilter implements ContainerRequestFilter {
-    
+
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORIZATION_HEADER_PREFIX = "Basic ";
     private static final String SECURED_URL_PREFIX = "secured";
@@ -43,23 +43,23 @@ public class SecurityFilter implements ContainerRequestFilter {
                 Logger.getLogger(SecurityFilter.class.getName()).log(Level.SEVERE, null, ex);
             }
             Response unauthorizedStatus = Response
-                                                .status(Response.Status.UNAUTHORIZED)
-                                                .entity("User is not authenticated")
-                                                .build();
+                .status(Response.Status.UNAUTHORIZED)
+                .entity("User is not authenticated")
+                .build();
             requestContext.abortWith(unauthorizedStatus);
         }
     }
-    
+
     private boolean checkCredentialString(ContainerRequestContext requestContext) throws SQLException {
-        
+
         Connection connection = null;
         Statement sqlStatement = null;
         String query;
-        
-        List<String> authHeader = requestContext.getHeaders().get(AUTHORIZATION_HEADER);
+
+        List < String > authHeader = requestContext.getHeaders().get(AUTHORIZATION_HEADER);
         if (authHeader != null && authHeader.size() > 0) {
             String authToken = authHeader.get(0);
-            
+
             // Refactor this using getEmailFromBase64String From SecuredRoutes.java
             authToken = authToken.replaceFirst(AUTHORIZATION_HEADER_PREFIX, "");
             String decodedAuthString = new String(Base64.getDecoder().decode(authToken));
@@ -84,9 +84,7 @@ public class SecurityFilter implements ContainerRequestFilter {
             } catch (Exception e) {
                 // TODO: send a response with error to the front end
 
-            }
-
-            finally {
+            } finally {
                 if (sqlStatement != null) {
                     sqlStatement.close();
                     connection.close();
@@ -95,5 +93,5 @@ public class SecurityFilter implements ContainerRequestFilter {
         }
         return false;
     }
-    
+
 }

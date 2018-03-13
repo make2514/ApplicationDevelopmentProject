@@ -23,7 +23,7 @@ import org.json.JSONObject;
  */
 public final class RouteUtils {
     private static final String AUTHORIZATION_HEADER_PREFIX = "Basic ";
-    
+
     public static String getEmailFromBase64String(String base64String) {
         String authToken = base64String;
         authToken = authToken.replaceFirst(AUTHORIZATION_HEADER_PREFIX, "");
@@ -31,13 +31,13 @@ public final class RouteUtils {
         StringTokenizer tokenizer = new StringTokenizer(decodedAuthString, ":");
         return tokenizer.nextToken();
     }
-    
+
     public static String getBase64StringFromRequestHeader(HttpHeaders hh) {
-        MultivaluedMap<String, String> headerParams = hh.getRequestHeaders();
+        MultivaluedMap < String, String > headerParams = hh.getRequestHeaders();
         String base64String = headerParams.getFirst("Authorization").replaceFirst(AUTHORIZATION_HEADER_PREFIX, "");
         return base64String;
     }
-    
+
     public static JSONObject getUserEmailAndPassword(String base64String) {
         String decodedAuthString = new String(Base64.getDecoder().decode(base64String));
         StringTokenizer tokenizer = new StringTokenizer(decodedAuthString, ":");
@@ -48,9 +48,9 @@ public final class RouteUtils {
         userObj.put("password", password);
         return userObj;
     }
-    
+
     public static boolean _isRegistered(String email) throws SQLException {
-        
+
         Connection connection = null;
         Statement sqlStatement = null;
         String query = "SELECT * FROM EMPLOYEE WHERE EMAIL = '" + email + "'";
@@ -63,20 +63,18 @@ public final class RouteUtils {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
-            }    
+            }
         }
-        
+
         return isRegistered;
     }
-    
-    public static boolean isInDb(String query,String[] params) throws SQLException {
-        
+
+    public static boolean isInDb(String query, String[] params) throws SQLException {
+
         Connection connection = null;
         PreparedStatement sqlStatement = null;
         boolean result = false;
@@ -90,20 +88,18 @@ public final class RouteUtils {
             result = resultSet.next();
         } catch (Exception e) {
             // TODO: send a response with error to the front end
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
-            }    
+            }
         }
-        
+
         return result;
     }
-    
-    public static String insertToDb(String query,String[] params) throws SQLException {
-        
+
+    public static String insertToDb(String query, String[] params) throws SQLException {
+
         Connection connection = null;
         PreparedStatement sqlStatement = null;
 
@@ -121,20 +117,18 @@ public final class RouteUtils {
             // TODO: send a response with error to the front end
             return e.toString();
 
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return "false";
     }
-    
-    public static String deleteFromDb(String query,String[] params) throws SQLException {
-        
+
+    public static String deleteFromDb(String query, String[] params) throws SQLException {
+
         Connection connection = null;
         PreparedStatement sqlStatement = null;
 
@@ -151,15 +145,13 @@ public final class RouteUtils {
         } catch (Exception e) {
             // TODO: send a response with error to the front end
             return e.toString();
-        }
-
-        finally {
+        } finally {
             if (sqlStatement != null) {
                 sqlStatement.close();
                 connection.close();
             }
         }
-        
+
         return "false";
     }
 }
