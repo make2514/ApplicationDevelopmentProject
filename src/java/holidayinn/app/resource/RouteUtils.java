@@ -132,4 +132,34 @@ public final class RouteUtils {
         
         return "false";
     }
+    
+    public static String deleteFromDb(String query,String[] params) throws SQLException {
+        
+        Connection connection = null;
+        PreparedStatement sqlStatement = null;
+
+        try {
+            connection = RestApiDatabaseConnection.HotelAppConnect().getConnection();
+            sqlStatement = connection.prepareStatement(query);
+            for (int i = 0; i < params.length; i++) {
+                sqlStatement.setString(i + 1, params[i]);
+            }
+            int hasRemovedSuccessfully = sqlStatement.executeUpdate();
+            while (hasRemovedSuccessfully > 0) {
+                return "true";
+            }
+        } catch (Exception e) {
+            // TODO: send a response with error to the front end
+            return e.toString();
+        }
+
+        finally {
+            if (sqlStatement != null) {
+                sqlStatement.close();
+                connection.close();
+            }
+        }
+        
+        return "false";
+    }
 }

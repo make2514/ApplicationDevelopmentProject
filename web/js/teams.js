@@ -31,7 +31,7 @@
         if (event.target === modal) {
             modal.style.display = 'none';
         }
-    }
+    };
   }
   
   function getTeams() {
@@ -124,13 +124,61 @@
     var t = document.createTextNode(team.name);      
     teamEl.appendChild(t);                       
     viewContainer.appendChild(teamEl);
-    attachEventListenersToTeamEl(teamEl, team.id);
+    if (window.hotelApp.userInfo.role === "manager") {
+        // add delete button
+        var deleteButton = document.createElement("button");
+        var deleteX = document.createTextNode("x");
+        deleteButton.appendChild(deleteX);
+        deleteButton.classList.add("delete");
+        teamEl.appendChild(deleteButton);
+    }
+    attachEventListenersToTeamEl(teamEl, deleteButton, team.id);
   }
   
-  function attachEventListenersToTeamEl(el, teamId) {
+  function attachEventListenersToTeamEl(el, deleteButton, teamId) {
     el.addEventListener("click", function(){
         location.href = '/HotelApp/team.html?team=' + teamId;
     });
+    if (deleteButton) {
+        deleteButton.addEventListener("click", function(e){
+            deleteTeam(teamId);
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
+  }
+  
+  function deleteTeam(teamId) {
+      fetch(
+        "/HotelApp/webresources/secured/team/" + teamId,
+            {
+                method: 'delete',
+                headers:
+                {
+                    "Authorization": base64String,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
+        )
+          .then(
+            function(response) {
+              if (response.status !== 200) {
+                console.log('Looks like there was a problem. Status Code: ' +
+                  response.status, response);
+                  response.text().then(function (text) {
+                    console.log(text);
+                  });
+                  return;
+              }
+              response.text().then(function () {
+                  location.reload();
+              });
+              
+            }
+          )
+          .catch(function(err) {
+            console.log('Fetch Error: ', err);
+          });
   }
   
   if (authenticate()) {

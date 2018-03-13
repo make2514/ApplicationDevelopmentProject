@@ -112,6 +112,39 @@
             console.log('Fetch Error :-S', err);
           });
     }
+    
+    function deleteMember(teamId, memberId) {
+      fetch(
+        "/HotelApp/webresources/secured/team/" + teamId + "/" + memberId,
+            {
+                method: 'delete',
+                headers:
+                {
+                    "Authorization": base64String,
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
+        )
+          .then(
+            function(response) {
+              if (response.status !== 200) {
+                console.log('Looks like there was a problem. Status Code: ' +
+                  response.status, response);
+                  response.text().then(function (text) {
+                    console.log(text);
+                  });
+                  return;
+              }
+              response.text().then(function () {
+                  location.reload();
+              });
+              
+            }
+          )
+          .catch(function(err) {
+            console.log('Fetch Error: ', err);
+          });
+  }
   
   function createTeamMemberEl(member) {
     var viewContainer = document.getElementsByClassName("container")[0];
@@ -120,13 +153,29 @@
     var t = document.createTextNode(member.firstName + " " + member.lastName);
     memberEl.appendChild(t);
     viewContainer.appendChild(memberEl);
-    attachEventListenersToTeamMemberEl(memberEl, member.ID);
+    if (window.hotelApp.userInfo.role === "manager") {
+        // add delete button
+        var deleteButton = document.createElement("button");
+        var deleteX = document.createTextNode("x");
+        deleteButton.appendChild(deleteX);
+        deleteButton.classList.add("delete");
+        memberEl.appendChild(deleteButton);
+    }
+    
+    attachEventListenersToTeamMemberEl(memberEl,deleteButton, member.ID);
   }
   
-  function attachEventListenersToTeamMemberEl(el, memberId) {
+  function attachEventListenersToTeamMemberEl(el, deleteButton, memberId) {
     el.addEventListener("click", function(){
         location.href = '/HotelApp/task.html?team=' + getUrlQueryParam('team') + '&member=' + memberId;
     });
+    if (deleteButton) {
+        deleteButton.addEventListener("click", function(e){
+            deleteMember(getTeamId(), memberId);
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
   }
   
   if (authenticate()) {
